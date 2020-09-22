@@ -28,6 +28,7 @@ public class Server {
     Boolean generations = false;
     int store = 0;
     int index = 0;
+    Boolean found = false;
     private OutputStream outputStream;
     Socket connectionSocket;
     ServerSocket welcomeSocket;
@@ -53,9 +54,9 @@ public class Server {
         //Run while connection is live
         while (connected) {
             if (fileLength != 0 ) {
-                byte[] receivedFile = new byte[(int)fileLength];
+                byte[] receivedFile = new byte[(int) fileLength];
                 for (int i = 0; i < fileLength; i++) {
-                    receivedFile[i] = (byte)connectionSocket.getInputStream().read();
+                    receivedFile[i] = (byte) connectionSocket.getInputStream().read();
                 }
                 try {
 
@@ -78,13 +79,14 @@ public class Server {
                         stream.close();
                         outputToClient.writeBytes("+Saved" + currentDir + "\\" + storeFileName + "\n");
                     }
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     fileLength = 0;
                     storeFileName = null;
                     outputToClient.writeBytes("-Couldn't save because there wasn't a proper instruction to store\n");
                     continue;
                 }
+            }
+            else {
 
                 //Reading command from user
                 clientSentence = inputFromClient.readLine();
@@ -94,10 +96,11 @@ public class Server {
                 }
                 String cmd = sentenceWords[0];
                 String info = sentenceWords[1];
+                found = false;
 
                 for (int i = 0; i < commands.length; i++) {
                     if (cmd.equals(commands[i])) {
-
+                        found = true;
                         //USER command
                         if (cmd.equals("USER")) {
 
@@ -425,12 +428,11 @@ public class Server {
                         else {
                             outputToClient.writeBytes("-No account detected, please log in\n");
                         }
+                        break;
                     }
-
-                    //Invalid command response
-                    else {
-                        outputToClient.writeBytes("-Invalid user command, please try again\n");
-                    }
+                }
+                if (found = false){
+                    outputToClient.writeBytes(("-Invalid user command, please try again\n"));
                 }
             }
         }
